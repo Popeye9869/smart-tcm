@@ -78,8 +78,18 @@ export const useDiagnosisStore = defineStore('diagnosis', () => {
       
       // 更新当前病历记录
       if (medicalRecords.value.length > 0) {
-        medicalRecords.value[0].prescription = response
-        medicalRecords.value[0].updatedAt = new Date().toISOString()
+        if (medicalRecords.value[0]) {
+          medicalRecords.value[0].prescription = response
+        }
+        else {
+          console.error('病历记录不存在')
+        }
+        if (medicalRecords.value[0]) {
+          medicalRecords.value[0].updatedAt = new Date().toISOString()
+        }
+        else {
+          console.error('病历记录不存在')
+        }
         saveToLocalStorage()
       }
       
@@ -111,7 +121,7 @@ export const useDiagnosisStore = defineStore('diagnosis', () => {
   
   const loadRecord = (record: MedicalRecord) => {
     currentDiagnosis.value = record.diagnosis
-    currentPrescription.value = record.prescription
+    currentPrescription.value = record.prescription || null
   }
   
   // 本地存储

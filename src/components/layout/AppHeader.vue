@@ -1,5 +1,5 @@
 <template>
-  <header class="app-header" :class="{ 'dark': appStore.isDarkMode }">
+  <header class="app-header" :class="{ 'dark': appStore.isDarkMode, 'hidden': !isHeaderVisible }">
     <div class="header-content">
       <!-- 左侧 Logo 和标题 -->
       <div class="header-left">
@@ -138,7 +138,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAppStore } from '@/stores/app'
@@ -165,6 +165,10 @@ const appStore = useAppStore()
 const searchQuery = ref('')
 const showMobileMenu = ref(false)
 const notificationCount = ref(2)
+const lastScrollY = ref(0)
+
+// 注入共享的头部显示状态
+const isHeaderVisible = inject('headerVisible', ref(true))
 
 const navItems = [
   { path: '/', key: 'home', icon: 'House' },
@@ -229,6 +233,43 @@ const handleUserAction = (command: string) => {
       break
   }
 }
+
+// 滚动处理函数
+let scrollTimeout: number | null = null
+const handleScroll = () => {
+  // 清除之前的定时器
+  if (scrollTimeout) {
+    clearTimeout(scrollTimeout)
+  }
+  
+  // 延迟执行，优化性能
+  scrollTimeout = window.setTimeout(() => {
+    const currentScrollY = window.scrollY
+    
+    // 当向上滚动时显示头部，向下滚动超过50px时隐藏头部
+    if (currentScrollY < lastScrollY.value) {
+      // 向上滚动，显示头部
+      isHeaderVisible.value = true
+    } else if (currentScrollY > lastScrollY.value && currentScrollY > 50) {
+      // 向下滚动超过50px，隐藏头部
+      isHeaderVisible.value = false
+    }
+    
+    lastScrollY.value = currentScrollY
+  }, 50)
+}
+
+// 生命周期钩子
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+  if (scrollTimeout) {
+    clearTimeout(scrollTimeout)
+  }
+})
 </script>
 
 <style scoped>
@@ -240,6 +281,11 @@ const handleUserAction = (command: string) => {
   top: 0;
   z-index: 1000;
   transition: all 0.3s ease;
+  transform: translateY(0);
+}
+
+.app-header.hidden {
+  transform: translateY(-100%);
 }
 
 .app-header.dark {

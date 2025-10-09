@@ -56,7 +56,7 @@ export class TCMService {
    * 智能中医诊断
    */
   static async diagnose(request: DiagnosisRequest): Promise<DiagnosisResponse> {
-    const { symptoms, pulse, tongue, age, gender, medicalHistory } = request
+    const { symptoms, pulse, tongue, patientInfo } = request
     
     const systemPrompt = `你是一位经验丰富的中医专家，擅长通过症状、脉象、舌象等信息进行中医诊断。
 请根据患者提供的信息，按照中医理论进行分析和诊断。
@@ -72,9 +72,11 @@ export class TCMService {
 请以专业、详细、易懂的方式回答，确保诊断准确可靠。`
 
     const userPrompt = `患者信息：
-年龄：${age}岁
-性别：${gender}
-既往病史：${medicalHistory || '无'}
+年龄：${patientInfo.age}岁
+性别：${patientInfo.gender}
+既往病史：${patientInfo.medicalHistory || '无'}
+过敏史：${patientInfo.allergies?.join(', ') || '无'}
+当前用药：${patientInfo.currentMedications?.join(', ') || '无'}
 
 症状描述：${symptoms}
 脉象：${pulse || '未提供'}
@@ -218,12 +220,12 @@ export class TCMService {
   // 辅助解析方法
   private static extractSyndromeType(text: string): string {
     const match = text.match(/证型[:：]\s*([^\n]+)/)
-    return match ? match[1].trim() : '需进一步辨证'
+    return match && match[1] !== undefined ? match[1].trim() : '需进一步辨证'
   }
 
   private static extractTreatmentPrinciple(text: string): string {
     const match = text.match(/治则[:：]\s*([^\n]+)/)
-    return match ? match[1].trim() : '辨证施治'
+    return match && match[1] !== undefined ? match[1].trim() : '辨证施治'
   }
 
   private static extractRecommendations(text: string): string[] {
@@ -260,12 +262,12 @@ export class TCMService {
 
   private static extractDosage(text: string): string {
     const match = text.match(/剂量[:：]\s*([^\n]+)/)
-    return match ? match[1].trim() : '遵医嘱'
+    return match && match[1] ? match[1].trim() : '遵医嘱'
   }
 
   private static extractPreparation(text: string): string {
     const match = text.match(/煎服法[:：]\s*([^\n]+)/)
-    return match ? match[1].trim() : '水煎服'
+    return match && match[1] ? match[1].trim() : '水煎服'
   }
 
   private static extractPrecautions(text: string): string[] {
@@ -287,7 +289,7 @@ export class TCMService {
 
   private static extractDuration(text: string): string {
     const match = text.match(/疗程[:：]\s*([^\n]+)/)
-    return match ? match[1].trim() : '7-14天'
+    return match && match[1] ? match[1].trim() : '7-14天'
   }
 }
 

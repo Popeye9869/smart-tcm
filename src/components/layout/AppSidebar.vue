@@ -1,5 +1,5 @@
 <template>
-  <aside class="app-sidebar" :class="{ collapsed: appStore.sidebarCollapsed, dark: appStore.isDarkMode }">
+  <aside class="app-sidebar" :class="{ collapsed: appStore.sidebarCollapsed, dark: appStore.isDarkMode, 'header-hidden': !headerVisible }">
     <div class="sidebar-content">
       <!-- 用户信息 -->
       <div class="user-info" v-if="!appStore.sidebarCollapsed">
@@ -83,7 +83,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 import { useDiagnosisStore } from '@/stores/diagnosis'
@@ -102,6 +102,9 @@ import {
 const router = useRouter()
 const appStore = useAppStore()
 const diagnosisStore = useDiagnosisStore()
+
+// 注入头部显示状态
+const headerVisible = inject('headerVisible', ref(true))
 
 const knowledgeCount = ref(156)
 
@@ -306,6 +309,22 @@ const handleQuickAction = (key: string) => {
 
 .collapse-btn:hover {
   transform: scale(1.1);
+}
+
+/* 头部隐藏时的侧边栏动画 */
+.app-sidebar.header-hidden {
+  transform: translateX(0);
+  transition: transform 0.3s ease;
+}
+
+.app-sidebar.header-hidden.collapsed {
+  transform: translateX(0);
+}
+
+/* 头部显示时的侧边栏动画 */
+.app-sidebar:not(.header-hidden) {
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
 }
 
 /* 响应式设计 */

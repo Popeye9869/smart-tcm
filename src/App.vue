@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
-import { onMounted } from 'vue'
+import { onMounted, ref, provide } from 'vue'
 import { useAppStore } from '@/stores/app'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
@@ -8,6 +8,10 @@ import AppFooter from '@/components/layout/AppFooter.vue'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 
 const appStore = useAppStore()
+
+// 管理头部显示状态
+const isHeaderVisible = ref(true)
+provide('headerVisible', isHeaderVisible)
 
 onMounted(() => {
   appStore.initialize()
