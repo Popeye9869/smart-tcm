@@ -246,9 +246,9 @@ const handleScroll = () => {
   scrollTimeout = window.setTimeout(() => {
     const currentScrollY = window.scrollY
     
-    // 当向上滚动时显示头部，向下滚动超过50px时隐藏头部
-    if (currentScrollY < lastScrollY.value) {
-      // 向上滚动，显示头部
+    // 当向上滚动或快到底部时显示头部，向下滚动超过50px时隐藏头部
+    if (currentScrollY < lastScrollY.value || currentScrollY > document.documentElement.scrollHeight - window.innerHeight - 380) {
+      // 向上滚动或快到底部，显示头部
       isHeaderVisible.value = true
     } else if (currentScrollY > lastScrollY.value && currentScrollY > 50) {
       // 向下滚动超过50px，隐藏头部
@@ -408,6 +408,7 @@ onUnmounted(() => {
   color: white;
 }
 
+
 /* 动画 */
 .slide-down-enter-active,
 .slide-down-leave-active {
@@ -423,7 +424,7 @@ onUnmounted(() => {
 /* 响应式设计 */
 @media screen and (max-width: 768px) {
   .header-content {
-    padding: 12px 16px;
+    padding: 8px 12px;
   }
   
   .brand-subtitle {
@@ -433,24 +434,44 @@ onUnmounted(() => {
   .search-box {
     width: 150px;
   }
+  
+  .logo {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .brand-title {
+    font-size: 1.1rem;
+  }
 }
 
 @media screen and (max-width: 480px) {
   .header-content {
-    padding: 8px 12px;
+    padding: 6px 10px;
   }
   
   .logo {
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
   }
   
   .brand-title {
-    font-size: 1.2rem;
+    font-size: 1rem;
   }
   
   .header-right {
-    gap: 8px;
+    gap: 6px;
+  }
+  
+  .header-left {
+    gap: 10px;
+  }
+  
+  .mobile-menu-btn {
+    margin-left: 4px;
+  }
+  .hidden-mobile{
+    display: none;
   }
 }
 

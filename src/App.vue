@@ -100,6 +100,15 @@ onMounted(() => {
   .content-wrapper {
     padding: 16px;
   }
+  
+  /* 移动端隐藏侧边栏 */
+  .main-layout {
+    position: relative;
+  }
+  
+  .main-layout > .app-sidebar {
+    display: none;
+  }
 }
 
 @media screen and (max-width: 480px) {

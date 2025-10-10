@@ -330,16 +330,7 @@ const handleQuickAction = (key: string) => {
 /* 响应式设计 */
 @media screen and (max-width: 768px) {
   .app-sidebar {
-    transform: translateX(-100%);
-    width: 280px;
-  }
-  
-  .app-sidebar.collapsed {
-    transform: translateX(-100%);
-  }
-  
-  .app-sidebar.mobile-open {
-    transform: translateX(0);
+    display: none;  /* 移动端完全隐藏侧边栏 */
   }
 }
 </style>
