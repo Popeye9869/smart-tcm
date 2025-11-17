@@ -54,6 +54,29 @@ export interface TCMKnowledge {
   updatedAt: string
 }
 
+export type KnowledgeCategory = 'herbs' | 'prescriptions' | 'acupuncture' | 'diagnosis' | 'theory'
+
+export interface KnowledgeLink {
+  id: string
+  title: string
+}
+
+export interface KnowledgeItem {
+  id: string
+  category: KnowledgeCategory
+  title: string
+  description: string
+  content?: string
+  tags: string[]
+  views: number
+  likes: number
+  isLiked?: boolean
+  isFavorited?: boolean
+  createdAt: string
+  updatedAt?: string
+  relatedItems?: KnowledgeLink[]
+}
+
 export interface MedicalRecord {
   id: string
   patientId: string

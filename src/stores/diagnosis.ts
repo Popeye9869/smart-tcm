@@ -56,21 +56,36 @@ export const useDiagnosisStore = defineStore('diagnosis', () => {
     }
   }
   
-  const generatePrescription = async (): Promise<PrescriptionResponse> => {
-    if (!currentDiagnosis.value) {
-      throw new Error('请先进行诊断')
+  const generatePrescription = async (params?: {syndrome?: string, diagnosis?: string, patientInfo?: PatientInfo}): Promise<PrescriptionResponse> => {
+    // 如果提供了参数，使用参数中的信息；否则使用当前诊断结果
+    let diagnosis: string
+    let syndromeType: string
+    let patientInfo: PatientInfo
+    
+    if (params) {
+      diagnosis = params.diagnosis || currentDiagnosis.value?.diagnosis || ''
+      syndromeType = params.syndrome || currentDiagnosis.value?.syndromeType || ''
+      patientInfo = params.patientInfo || (medicalRecords.value.length > 0 
+        ? medicalRecords.value[0].patientInfo 
+        : { age: 30, gender: 'male' })
+    } else {
+      if (!currentDiagnosis.value) {
+        throw new Error('请先进行诊断')
+      }
+      diagnosis = currentDiagnosis.value.diagnosis
+      syndromeType = currentDiagnosis.value.syndromeType
+      patientInfo = medicalRecords.value.length > 0 
+        ? medicalRecords.value[0].patientInfo 
+        : { age: 30, gender: 'male' }
     }
     
     isPrescribing.value = true
     
     try {
       const request: PrescriptionRequest = {
-        diagnosis: currentDiagnosis.value.diagnosis,
-        syndromeType: currentDiagnosis.value.syndromeType,
-        patientInfo: {
-          age: 30, // 应该从当前诊断请求中获取
-          gender: 'male'
-        }
+        diagnosis,
+        syndromeType,
+        patientInfo
       }
       
       const response = await TCMService.prescribe(request)
@@ -78,18 +93,8 @@ export const useDiagnosisStore = defineStore('diagnosis', () => {
       
       // 更新当前病历记录
       if (medicalRecords.value.length > 0) {
-        if (medicalRecords.value[0]) {
-          medicalRecords.value[0].prescription = response
-        }
-        else {
-          console.error('病历记录不存在')
-        }
-        if (medicalRecords.value[0]) {
-          medicalRecords.value[0].updatedAt = new Date().toISOString()
-        }
-        else {
-          console.error('病历记录不存在')
-        }
+        medicalRecords.value[0].prescription = response
+        medicalRecords.value[0].updatedAt = new Date().toISOString()
         saveToLocalStorage()
       }
       

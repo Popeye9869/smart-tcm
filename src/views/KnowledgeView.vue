@@ -1,5 +1,5 @@
 <template>
-  <div class="knowledge-view">
+  <div class="knowledge-view" :class="{ dark: appStore.isDarkMode }">
     <div class="page-header">
       <h1 class="page-title">中医知识库</h1>
       <p class="page-subtitle">探索传统中医药的博大精深</p>
@@ -228,9 +228,11 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useKnowledgeStore } from '@/stores/knowledge'
+import { useAppStore } from '@/stores/app'
 import type { KnowledgeItem, KnowledgeCategory } from '@/types/tcm'
 
 const knowledgeStore = useKnowledgeStore()
+const appStore = useAppStore()
 
 // 搜索相关
 const searchQuery = ref('')
@@ -389,6 +391,140 @@ onMounted(() => {
   min-height: 100vh;
   background: linear-gradient(135deg, #F5E6D3 0%, #FAF0E6 100%);
   padding: 40px 24px;
+}
+
+.knowledge-view.dark {
+  background: linear-gradient(135deg, #2f2f2f 0%, #3a3a3a 100%);
+  color: #f5f5f5;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.knowledge-view.dark .page-title {
+  color: #f8e3c2;
+}
+
+.knowledge-view.dark .page-subtitle,
+.knowledge-view.dark .quick-tags-label,
+.knowledge-view.dark .card-category,
+.knowledge-view.dark .card-description,
+.knowledge-view.dark .card-date,
+.knowledge-view.dark .stat-item,
+.knowledge-view.dark .related-item span,
+.knowledge-view.dark .content-html,
+.knowledge-view.dark .detail-stats .stat-item,
+.knowledge-view.dark .pagination-container :deep(.el-pagination__total),
+.knowledge-view.dark .pagination-container :deep(.el-pagination__sizes),
+.knowledge-view.dark .pagination-container :deep(.el-pagination__jump) {
+  color: #e0d8cf;
+}
+
+.knowledge-view.dark .search-container,
+.knowledge-view.dark .category-sidebar,
+.knowledge-view.dark .knowledge-content {
+  background: rgba(34, 34, 34, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 32px rgba(0, 0, 0, 0.35);
+}
+
+.knowledge-view.dark .search-input :deep(.el-input__wrapper) {
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: #f5f5f5;
+}
+
+.knowledge-view.dark .search-input :deep(.el-input__inner),
+.knowledge-view.dark .search-input :deep(.el-input__prefix),
+.knowledge-view.dark .search-input :deep(.el-input__suffix) {
+  color: #f5f5f5;
+}
+
+.knowledge-view.dark .search-input :deep(.el-input-group__append) {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.9);
+  color: #2f2f2f;
+}
+
+.knowledge-view.dark .quick-tag {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #f5f5f5;
+}
+
+.knowledge-view.dark .category-header h3,
+.knowledge-view.dark .card-title h4,
+.knowledge-view.dark .content-section h4 {
+  color: #f8e3c2;
+}
+
+.knowledge-view.dark .category-menu :deep(.el-menu-item) {
+  color: #e0d8cf;
+}
+
+.knowledge-view.dark .category-menu :deep(.el-menu-item:hover) {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.knowledge-view.dark .category-menu :deep(.el-menu-item.is-active) {
+  background: rgba(255, 255, 255, 0.9);
+  color: #2f2f2f;
+}
+
+.knowledge-view.dark .knowledge-card {
+  background: rgba(34, 34, 34, 0.92);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 16px 28px rgba(0, 0, 0, 0.35);
+}
+
+.knowledge-view.dark .knowledge-card:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 20px 32px rgba(0, 0, 0, 0.45);
+}
+
+.knowledge-view.dark .card-icon {
+  color: #f8e3c2;
+}
+
+.knowledge-view.dark .card-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.knowledge-view.dark :deep(.el-tag) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #f5f5f5;
+}
+
+.knowledge-view.dark .related-item {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.knowledge-view.dark .related-item:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.knowledge-view.dark .detail-actions {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.knowledge-view.dark .detail-actions .el-button {
+  box-shadow: none;
+}
+
+.knowledge-view.dark .knowledge-detail-dialog :deep(.el-dialog) {
+  background: rgba(34, 34, 34, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.knowledge-view.dark .knowledge-detail-dialog :deep(.el-dialog__header) {
+  background: rgba(60, 60, 60, 0.95);
+  color: #f5f5f5;
+  border-radius: 20px 20px 0 0;
+}
+
+.knowledge-view.dark .knowledge-detail-dialog :deep(.el-dialog__title),
+.knowledge-view.dark .knowledge-detail-dialog :deep(.el-dialog__close) {
+  color: #f5f5f5;
 }
 
 .page-header {

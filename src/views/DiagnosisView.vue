@@ -1,5 +1,5 @@
 <template>
-  <div class="diagnosis-view">
+  <div class="diagnosis-view" :class="{ dark: appStore.isDarkMode }">
     <!-- 页面标题 -->
     <div class="page-header" v-motion-fade>
       <h1 class="page-title">智能诊断</h1>
@@ -589,9 +589,11 @@ import {
   DataAnalysis
 } from '@element-plus/icons-vue'
 import { useDiagnosisStore } from '@/stores/diagnosis'
+import { useAppStore } from '@/stores/app'
 import { TCMService } from '@/services/aiService'
 
 const diagnosisStore = useDiagnosisStore()
+const appStore = useAppStore()
 const tcmService = new TCMService()
 
 const currentStep = ref(0)
@@ -655,78 +657,7 @@ const performDiagnosis = async () => {
   diagnosisLoading.value = true
   
   try {
-    // 模拟诊断过程
-    await new Promise(resolve => setTimeout(resolve, 3000))
-    
-    // 模拟诊断结果
-    diagnosisResult.value = {
-      syndrome: '肝郁气滞证',
-      pathogenesis: '情志不畅，肝气郁结，气机不畅，导致气血运行受阻，出现胸闷、胁痛等症状。',
-      location: ['肝', '胆'],
-      nature: ['气滞', '实证'],
-      evidence: [
-        '胸胁胀痛，情绪波动时加重',
-        '舌苔薄白，脉弦',
-        '伴有胸闷、叹息等气机不畅表现',
-        '情志不畅病史'
-      ]
-    }
-    
-    // 模拟治疗方案
-    treatmentPlan.value = {
-      prescription: {
-        name: '柴胡疏肝散加减',
-        type: '疏肝理气',
-        herbs: [
-          { name: '柴胡', dosage: 6, unit: 'g', function: '疏肝解郁' },
-          { name: '香附', dosage: 6, unit: 'g', function: '理气止痛' },
-          { name: '川芎', dosage: 6, unit: 'g', function: '活血行气' },
-          { name: '陈皮', dosage: 6, unit: 'g', function: '理气健脾' },
-          { name: '枳壳', dosage: 6, unit: 'g', function: '行气宽中' },
-          { name: '白芍', dosage: 9, unit: 'g', function: '养血柔肝' },
-          { name: '甘草', dosage: 3, unit: 'g', function: '调和诸药' }
-        ],
-        usage: '水煎服，每日1剂，分2次服用，连服7天。'
-      },
-      lifestyle: {
-        diet: [
-          '宜食清淡易消化食物',
-          '多食疏肝理气食物，如柑橘、玫瑰花茶等',
-          '忌食辛辣刺激、油腻食物',
-          '避免过食生冷'
-        ],
-        daily: [
-          '保持规律作息，避免熬夜',
-          '适当运动，如太极拳、八段锦',
-          '注意保暖，避免受凉',
-          '保持居住环境通风良好'
-        ],
-        emotion: [
-          '保持心情舒畅，避免情绪波动',
-          '学会放松技巧，如深呼吸、冥想',
-          '适当参加社交活动',
-          '必要时寻求心理咨询'
-        ]
-      },
-      prognosis: {
-        assessment: '良好',
-        type: 'success',
-        precautions: [
-          '注意情志调摄，避免情绪刺激',
-          '定期复诊，观察病情变化',
-          '如出现症状加重，及时就医'
-        ],
-        followUp: '建议1周后复诊，观察症状改善情况，必要时调整治疗方案。'
-      }
-    }
-    
-    // 保存诊断数据到store
-    // diagnosisStore.setPatientInfo(patientInfo)
-    // diagnosisStore.setSymptomInfo(symptomInfo)
-    // diagnosisStore.setExaminationInfo(examinationInfo)
-    // diagnosisStore.setDiagnosisResult(diagnosisResult.value)
-    // diagnosisStore.setTreatmentPlan(treatmentPlan.value)
-        // 构建症状描述
+    // 构建症状描述
     const symptoms = [
       ...symptomInfo.mainSymptoms,
       symptomInfo.description,
@@ -749,32 +680,97 @@ const performDiagnosis = async () => {
       }
     }
     
-    // 保存当前诊断数据到本地状态
-    // currentDiagnosisData.value = {
-    //   patientInfo,
-    //   symptomInfo,
-    //   examinationInfo,
-    //   diagnosisResult: diagnosisResult.value,
-    //   treatmentPlan: treatmentPlan.value
-    // }
+    // 调用store的startDiagnosis方法获取真实API的诊断结果
+    const apiDiagnosisResult = await diagnosisStore.startDiagnosis(diagnosisRequest)
     
-    // 调用store的startDiagnosis方法保存诊断数据
-    try {
-      await diagnosisStore.startDiagnosis(diagnosisRequest)
-    } catch (error) {
-      console.error('保存诊断数据到store失败:', error)
-      // 即使保存失败也继续，因为数据已在本地状态保存
+    // 将API返回的结果转换为界面需要的格式
+    diagnosisResult.value = {
+      syndrome: apiDiagnosisResult.syndromeType,
+      pathogenesis: apiDiagnosisResult.diagnosis,
+      location: extractLocation(apiDiagnosisResult.diagnosis),
+      nature: extractNature(apiDiagnosisResult.diagnosis),
+      evidence: apiDiagnosisResult.recommendations.slice(0, 4) // 取前4条建议作为诊断依据
+    }
+    
+    // 调用store的generatePrescription方法获取处方，传递诊断结果作为参数
+    const apiPrescriptionResult = await diagnosisStore.generatePrescription({
+      syndrome: apiDiagnosisResult.syndromeType,
+      diagnosis: apiDiagnosisResult.diagnosis,
+      patientInfo: {
+        age: patientInfo.age,
+        gender: patientInfo.gender as 'male' | 'female',
+        medicalHistory: patientInfo.medicalHistory
+      }
+    })
+    
+    // 将API返回的处方结果转换为界面需要的格式
+    treatmentPlan.value = {
+      prescription: {
+        name: apiPrescriptionResult.summary,
+        type: apiPrescriptionResult.treatmentPrinciple || '中医治疗',
+        herbs: parseHerbs(apiPrescriptionResult.mainHerbs),
+        usage: apiPrescriptionResult.preparation || '水煎服，每日1剂，分2次服用。'
+      },
+      lifestyle: {
+        diet: apiPrescriptionResult.precautions.slice(0, 4),
+        daily: ['保持规律作息，避免熬夜', '适当运动，如太极拳、八段锦'],
+        emotion: ['保持心情舒畅，避免情绪波动', '学会放松技巧，如深呼吸、冥想']
+      },
+      prognosis: {
+        assessment: '良好',
+        type: 'success',
+        precautions: apiPrescriptionResult.precautions.slice(0, 3),
+        followUp: apiPrescriptionResult.duration || '建议1周后复诊'
+      }
     }
     
     currentStep.value++
-    
     ElMessage.success('诊断完成！')
   } catch (error) {
-    ElMessage.error('诊断失败，请稍后重试')
     console.error('Diagnosis error:', error)
+    // 显示更详细的错误信息
+    const errorMessage = error instanceof Error ? error.message : '诊断失败，请稍后重试'
+    ElMessage.error(errorMessage)
   } finally {
     diagnosisLoading.value = false
   }
+}
+
+// 辅助函数：从诊断文本中提取病位
+const extractLocation = (diagnosisText: string): string[] => {
+  // 简单的病位提取逻辑，可以根据需要优化
+  const locations = ['心', '肝', '脾', '肺', '肾', '胆', '胃', '肠']
+  return locations.filter(loc => diagnosisText.includes(loc))
+}
+
+// 辅助函数：从诊断文本中提取病性
+const extractNature = (diagnosisText: string): string[] => {
+  // 简单的病性提取逻辑，可以根据需要优化
+  const natures = ['气虚', '血虚', '阴虚', '阳虚', '气滞', '血瘀', '痰湿', '湿热', '寒湿', '实热', '虚寒']
+  return natures.filter(nature => diagnosisText.includes(nature))
+}
+
+// 辅助函数：解析药材信息
+const parseHerbs = (herbTexts: string[]): Array<{name: string, dosage: number, unit: string, function: string}> => {
+  return herbTexts.map(herbText => {
+    // 尝试从文本中提取药材名称和剂量
+    const match = herbText.match(/(\w+[\w\s]*?)[\s]*(\d+)[g克]/)
+    if (match) {
+      return {
+        name: match[1].trim(),
+        dosage: parseInt(match[2]),
+        unit: 'g',
+        function: '中药功效' // 可以进一步解析或使用默认值
+      }
+    }
+    // 如果解析失败，返回默认值
+    return {
+      name: herbText,
+      dosage: 6,
+      unit: 'g',
+      function: '中药功效'
+    }
+  })
 }
 
 const saveDiagnosis = () => {
@@ -788,6 +784,103 @@ const saveDiagnosis = () => {
   min-height: 100vh;
   background: linear-gradient(135deg, #F5E6D3 0%, #FAF0E6 100%);
   padding: 40px 24px;
+}
+
+.diagnosis-view.dark {
+  background: linear-gradient(135deg, #2f2f2f 0%, #3a3a3a 100%);
+  color: #f5f5f5;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.diagnosis-view.dark .page-title,
+.diagnosis-view.dark .panel-header h2 {
+  color: #f8e3c2;
+}
+
+.diagnosis-view.dark .page-subtitle,
+.diagnosis-view.dark .panel-header p,
+.diagnosis-view.dark .diagnosis-item p,
+.diagnosis-view.dark .diagnosis-item li,
+.diagnosis-view.dark .lifestyle-item li,
+.diagnosis-view.dark .prognosis-item li {
+  color: #e0d8cf;
+}
+
+.diagnosis-view.dark .diagnosis-steps,
+.diagnosis-view.dark .step-panel,
+.diagnosis-view.dark .diagnosis-result .result-card,
+.diagnosis-view.dark .treatment-card {
+  background: rgba(34, 34, 34, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
+}
+
+.diagnosis-view.dark .card-header,
+.diagnosis-view.dark .prescription-name h3,
+.diagnosis-view.dark .diagnosis-item h4,
+.diagnosis-view.dark .lifestyle-item h4,
+.diagnosis-view.dark .prognosis-item h4 {
+  color: #f8e3c2;
+}
+
+.diagnosis-view.dark .step-actions .el-button {
+  box-shadow: none;
+}
+
+.diagnosis-view.dark :deep(.el-form-item__label),
+.diagnosis-view.dark :deep(.el-radio),
+.diagnosis-view.dark :deep(.el-checkbox),
+.diagnosis-view.dark :deep(.el-rate__text) {
+  color: #e0d8cf;
+}
+
+.diagnosis-view.dark :deep(.el-input__wrapper),
+.diagnosis-view.dark :deep(.el-select__wrapper),
+.diagnosis-view.dark :deep(.el-textarea__inner),
+.diagnosis-view.dark :deep(.el-date-editor),
+.diagnosis-view.dark :deep(.el-rate) {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #f5f5f5;
+}
+
+.diagnosis-view.dark :deep(.el-input__inner),
+.diagnosis-view.dark :deep(.el-select__placeholder),
+.diagnosis-view.dark :deep(.el-textarea__inner),
+.diagnosis-view.dark :deep(.el-date-editor input) {
+  color: #f5f5f5;
+}
+
+.diagnosis-view.dark :deep(.el-select-dropdown),
+.diagnosis-view.dark :deep(.el-popper) {
+  background: #2f2f2f;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.diagnosis-view.dark :deep(.el-select-dropdown__item),
+.diagnosis-view.dark :deep(.el-select-dropdown__item span) {
+  color: #f5f5f5;
+}
+
+.diagnosis-view.dark :deep(.el-table),
+.diagnosis-view.dark :deep(.el-table__header-wrapper),
+.diagnosis-view.dark :deep(.el-table__body-wrapper) {
+  background: transparent;
+  color: #e0d8cf;
+}
+
+.diagnosis-view.dark :deep(.el-table th),
+.diagnosis-view.dark :deep(.el-table tr),
+.diagnosis-view.dark :deep(.el-table td) {
+  background-color: transparent !important;
+  color: #e0d8cf;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.diagnosis-view.dark :deep(.el-alert) {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #e0d8cf;
 }
 
 .page-header {
@@ -863,6 +956,42 @@ const saveDiagnosis = () => {
 .examination-form {
   max-width: 800px;
   margin: 0 auto;
+}
+
+.patient-form :deep(.el-form-item__label) {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+@media screen and (max-width: 768px) {
+  .patient-form :deep(.el-row) {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .patient-form :deep(.el-col) {
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .patient-form :deep(.el-form-item) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .patient-form :deep(.el-form-item__label) {
+    width: 100% !important;
+    text-align: left;
+    padding: 0 0 8px 0;
+  }
+
+  .patient-form :deep(.el-form-item__content) {
+    width: 100%;
+  }
 }
 
 /* 诊断加载 */

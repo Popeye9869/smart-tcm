@@ -3,10 +3,10 @@ import type { DiagnosisRequest, DiagnosisResponse, PrescriptionRequest, Prescrip
 
 // 大模型API配置
 const API_CONFIG = {
-  baseURL: 'https://api.openai.com/v1', // 可以根据需要修改为您的API地址
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY || 'your-api-key-here',
-  model: 'gpt-3.5-turbo', // 可以根据需要修改模型
-  timeout: 30000 // 30秒超时
+  baseURL: 'https://api.moonshot.cn/v1', // Moonshot API地址
+  apiKey: 'sk-fXqaFKApUvX2BX1cgQNAgCCOGR2JV7Z16MpUmqZyYKmwUE59',
+  model: 'kimi-k2-0905-preview', // Moonshot模型
+  timeout: 3000000 // 30秒超时
 }
 
 // 创建axios实例
@@ -22,7 +22,9 @@ const aiClient = axios.create({
 // 请求拦截器
 aiClient.interceptors.request.use(
   (config) => {
-    console.log('AI Request:', config.data)
+    console.log('AI Request URL:', config.baseURL + config.url)
+    console.log('AI Request Headers:', config.headers)
+    console.log('AI Request Data:', config.data)
     return config
   },
   (error) => {
@@ -34,11 +36,16 @@ aiClient.interceptors.request.use(
 // 响应拦截器
 aiClient.interceptors.response.use(
   (response) => {
-    console.log('AI Response:', response.data)
+    console.log('AI Response Status:', response.status)
+    console.log('AI Response Data:', response.data)
     return response
   },
   (error) => {
     console.error('AI Response Error:', error)
+    console.error('Error Response:', error.response?.data)
+    console.error('Error Status:', error.response?.status)
+    console.error('Error Headers:', error.response?.headers)
+    
     if (error.response?.status === 401) {
       throw new Error('API密钥无效，请检查配置')
     } else if (error.response?.status === 429) {
@@ -46,7 +53,7 @@ aiClient.interceptors.response.use(
     } else if (error.code === 'ECONNABORTED') {
       throw new Error('请求超时，请检查网络连接')
     } else {
-      throw new Error('AI服务暂时不可用，请稍后再试')
+      throw new Error(`AI服务暂时不可用: ${error.message || '未知错误'}`)
     }
   }
 )
@@ -97,7 +104,6 @@ export class TCMService {
       })
 
       const diagnosisText = response.data.choices[0]?.message?.content || ''
-      
       // 解析AI返回的诊断结果
       return this.parseDiagnosisResult(diagnosisText)
     } catch (error) {

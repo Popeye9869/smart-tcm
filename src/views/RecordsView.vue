@@ -1,5 +1,5 @@
 <template>
-  <div class="records-view">
+  <div class="records-view" :class="{ dark: appStore.isDarkMode }">
     <div class="page-header">
       <h1 class="page-title">病历管理</h1>
       <p class="page-subtitle">管理和查看您的中医诊疗记录</p>
@@ -212,6 +212,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { useDiagnosisStore } from '@/stores/diagnosis'
+import { useAppStore } from '@/stores/app'
 import type { MedicalRecord } from '@/types/tcm'
 import {
   Search,
@@ -226,7 +227,8 @@ import {
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
-const diagnosisStore = useDiagnosisStore()
+const diagnosisStore = useDiagnosisStore() as any
+const appStore = useAppStore()
 
 // 搜索表单
 const searchForm = reactive({
@@ -268,7 +270,7 @@ const getDiagnosisType = (diagnosis: string) => {
 const handleSearch = async () => {
   loading.value = true
   try {
-    const result = await diagnosisStore.getMedicalRecords({
+  const result = await diagnosisStore.getMedicalRecords({
       patientName: searchForm.patientName,
       dateRange: searchForm.dateRange as string[],
       diagnosis: searchForm.diagnosis,
@@ -320,8 +322,9 @@ const handleEdit = (record: MedicalRecord) => {
 // 删除病历
 const handleDelete = async (record: MedicalRecord) => {
   try {
+    const patientName = (record as any).patientName
     await ElMessageBox.confirm(
-      `确定要删除患者 "${record.patientName}" 的病历吗？`,
+      `确定要删除患者 "${patientName}" 的病历吗？`,
       '删除确认',
       {
         confirmButtonText: '确定',
@@ -329,7 +332,6 @@ const handleDelete = async (record: MedicalRecord) => {
         type: 'warning'
       }
     )
-    
     await diagnosisStore.deleteMedicalRecord(record.id)
     ElMessage.success('删除成功')
     handleSearch()
@@ -368,6 +370,145 @@ onMounted(() => {
   min-height: 100vh;
   background: linear-gradient(135deg, #F5E6D3 0%, #FAF0E6 100%);
   padding: 40px 24px;
+}
+
+.records-view.dark {
+  background: linear-gradient(135deg, #2f2f2f 0%, #3a3a3a 100%);
+  color: #f5f5f5;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.records-view.dark .page-title {
+  color: #f8e3c2;
+}
+
+.records-view.dark .page-subtitle {
+  color: #e0d8cf;
+}
+
+.records-view.dark .search-form,
+.records-view.dark .records-content {
+  background: rgba(34, 34, 34, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 32px rgba(0, 0, 0, 0.35);
+}
+
+.records-view.dark .search-form :deep(.el-form-item__label) {
+  color: #f8e3c2;
+}
+
+.records-view.dark .search-form :deep(.el-input__wrapper),
+.records-view.dark .search-form :deep(.el-select__wrapper),
+.records-view.dark .search-form :deep(.el-date-editor) {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: none;
+  color: #f5f5f5;
+}
+
+.records-view.dark .search-form :deep(.el-input__inner),
+.records-view.dark .search-form :deep(.el-select__placeholder),
+.records-view.dark .search-form :deep(.el-date-editor input) {
+  color: #f5f5f5;
+}
+
+.records-view.dark .actions-section :deep(.el-button) {
+  box-shadow: none;
+}
+
+.records-view.dark .actions-section :deep(.el-radio-button__inner) {
+  background: rgba(255, 255, 255, 0.05);
+  color: #f5f5f5;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.records-view.dark .table-view :deep(.el-table) {
+  background: transparent;
+}
+
+.records-view.dark .table-view :deep(.el-table__header-wrapper) {
+  background: rgba(50, 50, 50, 0.95);
+}
+
+.records-view.dark .table-view :deep(.el-table th) {
+  background: rgba(50, 50, 50, 0.95);
+  color: #f8e3c2;
+}
+
+.records-view.dark .table-view :deep(.el-table td) {
+  color: #e0d8cf;
+  background-color: transparent;
+}
+
+.records-view.dark .table-view :deep(.el-table__row:hover) {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.records-view.dark .record-card,
+.records-view.dark .record-card :deep(.el-card__header),
+.records-view.dark .record-card :deep(.el-card__footer) {
+  background: rgba(34, 34, 34, 0.92);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 32px rgba(0, 0, 0, 0.35);
+}
+
+.records-view.dark .patient-info h4,
+.records-view.dark .info-item .label {
+  color: #f8e3c2;
+}
+
+.records-view.dark .patient-meta,
+.records-view.dark .info-item .value {
+  color: #e0d8cf;
+}
+
+.records-view.dark :deep(.el-tag) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #f5f5f5;
+}
+
+.records-view.dark :deep(.el-select-dropdown),
+.records-view.dark :deep(.el-popper) {
+  background: rgba(34, 34, 34, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #f5f5f5;
+}
+
+.records-view.dark :deep(.el-select-dropdown__item span),
+.records-view.dark :deep(.el-date-picker__header-label),
+.records-view.dark :deep(.el-date-picker__header-label span) {
+  color: #f5f5f5;
+}
+
+.records-view.dark .pagination-section :deep(.el-pagination__total),
+.records-view.dark .pagination-section :deep(.el-pagination__sizes),
+.records-view.dark .pagination-section :deep(.el-pagination__jump) {
+  color: #e0d8cf;
+}
+
+.records-view.dark .record-detail-dialog :deep(.el-dialog) {
+  background: rgba(34, 34, 34, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.records-view.dark .record-detail-dialog :deep(.el-dialog__header) {
+  background: rgba(60, 60, 60, 0.95);
+  color: #f5f5f5;
+}
+
+.records-view.dark .record-detail :deep(.el-descriptions) {
+  background: rgba(34, 34, 34, 0.92);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.records-view.dark .record-detail :deep(.el-descriptions__label) {
+  background: rgba(255, 255, 255, 0.05);
+  color: #f8e3c2;
+}
+
+.records-view.dark .record-detail :deep(.el-descriptions__content) {
+  color: #e0d8cf;
 }
 
 .page-header {

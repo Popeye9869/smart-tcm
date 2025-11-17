@@ -1,5 +1,5 @@
 <template>
-  <div class="home-view">
+  <div class="home-view" :class="{ dark: appStore.isDarkMode }">
     <!-- 英雄区域 -->
     <section class="hero-section">
       <div class="hero-content">
@@ -71,7 +71,7 @@
       
       <!-- 滚动指示器 -->
       <div class="scroll-indicator" @click="scrollToFeatures">
-        <div class="scroll-text">向下滚动</div>
+        <div class="scroll-text"></div>
         <div class="scroll-arrow"></div>
       </div>
     </section>
@@ -208,9 +208,11 @@ import {
   DataAnalysis,
   Star
 } from '@element-plus/icons-vue'
+import { useAppStore } from '@/stores/app'
 
 const router = useRouter()
 const featuresSection = ref<HTMLElement>()
+const appStore = useAppStore()
 
 const features = [
   {
@@ -334,6 +336,102 @@ const scrollToFeatures = () => {
 .home-view {
   min-height: 100vh;
   background: linear-gradient(135deg, #F5E6D3 0%, #FAF0E6 100%);
+}
+
+.home-view.dark {
+  background: linear-gradient(135deg, #2f2f2f 0%, #3a3a3a 100%);
+  color: #f5f5f5;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.home-view.dark .hero-section {
+  background: linear-gradient(135deg, rgba(40, 40, 40, 0.9) 0%, rgba(60, 60, 60, 0.9) 100%);
+}
+
+.home-view.dark .hero-title,
+.home-view.dark .section-title,
+.home-view.dark .cta-title,
+.home-view.dark .stat-number,
+.home-view.dark .step-number,
+.home-view.dark .feature-title,
+.home-view.dark .step-title {
+  color: #f8e3c2;
+}
+
+.home-view.dark .hero-subtitle,
+.home-view.dark .section-subtitle,
+.home-view.dark .feature-description,
+.home-view.dark .step-description,
+.home-view.dark .stat-label,
+.home-view.dark .cta-subtitle,
+.home-view.dark .scroll-text {
+  color: #e0d8cf;
+}
+
+.home-view.dark .secondary-button {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f8e3c2;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.home-view.dark .secondary-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #2f2f2f;
+}
+
+.home-view.dark .scroll-arrow {
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.home-view.dark .card,
+.home-view.dark .feature-card,
+.home-view.dark .stat-card {
+  background: rgba(34, 34, 34, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
+}
+
+.home-view.dark .card span,
+.home-view.dark .feature-card,
+.home-view.dark .stat-card {
+  color: #e0d8cf;
+}
+
+.home-view.dark .process-section {
+  background: linear-gradient(135deg, rgba(30, 30, 30, 0.95) 0%, rgba(45, 45, 45, 0.95) 100%);
+}
+
+.home-view.dark .process-step {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.home-view.dark .step-number {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.45);
+}
+
+.home-view.dark .stats-section,
+.home-view.dark .features-section {
+  background: transparent;
+}
+
+.home-view.dark .cta-section {
+  background: linear-gradient(135deg, #3f3f3f 0%, #2a2a2a 100%);
+}
+
+.home-view.dark .cta-section .cta-button {
+  background: rgba(255, 255, 255, 0.9);
+  color: #2f2f2f;
+}
+
+.home-view.dark .cta-section .secondary-button {
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+.home-view.dark :deep(.el-tag) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #f5f5f5;
 }
 
 /* 英雄区域 */

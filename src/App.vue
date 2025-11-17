@@ -22,10 +22,10 @@ onMounted(() => {
   <div id="app" class="app-container">
     <AppHeader />
     
-    <div class="main-layout">
+  <div class="main-layout" :class="{ dark: appStore.isDarkMode }">
       <AppSidebar />
       
-      <main class="main-content" :class="{ 'sidebar-collapsed': appStore.sidebarCollapsed }">
+      <main class="main-content" :class="{ 'sidebar-collapsed': appStore.sidebarCollapsed , dark: appStore.isDarkMode }">
         <div class="content-wrapper">
           <RouterView v-slot="{ Component }">
             <transition name="fade" mode="out-in">
@@ -56,16 +56,26 @@ onMounted(() => {
   min-height: 0;
 }
 
+.main-layout.dark {
+  background: linear-gradient(135deg, #2f2f2f 0%, #3a3a3a 100%);
+}
+
 .main-content {
-  flex: 1;
+  flex: 1 1 calc(100% - 260px);
+  width: calc(100% - 260px);
   margin-left: 260px;
-  transition: margin-left 0.3s ease;
+  min-width: 0;
+  transition: margin-left 0.3s ease, width 0.3s ease, flex-basis 0.3s ease;
   background: linear-gradient(135deg, #F5E6D3 0%, #FAF0E6 100%);
   min-height: calc(100vh - 120px);
 }
-
+.main-content.dark{
+  background: linear-gradient(135deg, #5c5b5a 0%, #636160 100%);
+}
 .main-content.sidebar-collapsed {
   margin-left: 64px;
+  width: calc(100% - 64px);
+  flex-basis: calc(100% - 64px);
 }
 
 .content-wrapper {
@@ -91,6 +101,8 @@ onMounted(() => {
   .main-content {
     margin-left: 0;
     margin-bottom: 60px;
+    width: 100%;
+    flex-basis: 100%;
   }
   
   .main-content.sidebar-collapsed {

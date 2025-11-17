@@ -7,7 +7,7 @@ export const useAppStore = defineStore('app', () => {
   const isLoading = ref(false)
   const currentLanguage = ref<'zh-CN' | 'en'>('zh-CN')
   const theme = ref<'light' | 'dark' | 'auto'>('light')
-  const sidebarCollapsed = ref(false)
+  const sidebarCollapsed = ref(true)
   const notifications = ref(true)
   
   // 用户信息
